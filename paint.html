@@ -1,0 +1,215 @@
+<!doctype HTML>
+<html style="background:url(paint1.jpg);">
+<title>PAINT</title>
+<div id="head" style="position:absolute;left:280px;width:822px;height:90px;">
+<table border="1" style="width:822px;height:90px;background:url(head.jpg);">
+<tr>
+	<th style="font-size:70px;">PAINT</th>
+</tr>
+</table>
+</div>
+
+<div id="toolset" style="position:absolute;top:100px;left:280px;width:120px;height:500px;">
+<table border="1">
+<tr>
+	<td ><button onclick="drawshape('line')" style="background-color:white;height:30px;width:109px;"><b>LINE</b></button></td>
+</tr>
+<tr>
+	<td ><button onclick="drawshape('rectangle')" style="background-color:white;height:30px;width:109px;"><b>RECTANGLE</b></button></td>
+</tr>
+<tr>
+	<td ><button onclick="drawshape('circle')" style="background-color:white;height:30px;width:109px;"><b>CIRCLE</b></button></td>
+</tr>
+<tr>
+	<td ><button onclick="drawshape('eraser')" style="background-color:white;height:30px;width:109px;"><b>ERASER</b></button></td>
+</tr>
+<tr>
+	<td ><button onclick="clearAll()" style="background-color:white;height:30px;width:109px;"><b>CLEAR</b></button></td>
+</tr>
+<tr>
+	<th border="1">Color</th>
+</tr>
+<tr>
+	<td border="1">
+		<input type="radio" name="drawtype" id="stroke" onclick="filltype('stroke')" checked="checked"><b>&ensp;Stroke</b><br>
+		<input type="radio" name="drawtype" id="fill" onclick="filltype('fill')" ><b>&ensp;Fill</b>
+	</td>
+</tr>
+<tr>
+	<td ><button onclick="colorselect('#FF0000')" style="background-color:#FF0000;height:25px;width:55px;">
+	<button onclick="colorselect('#0000FF')" style="background-color:#0000FF;height:25px;width:55px;"></button></td>
+</tr>
+<tr>
+	<td ><button onclick="colorselect('#00FF00')" style="background-color:#00FF00;height:25px;width:55px;">
+	<button onclick="colorselect('#FFFF00')" style="background-color:#FFFF00;height:25px;width:55px;"></button></td>
+</tr>
+<tr>
+	<td ><button onclick="colorselect('#00FFFF')" style="background-color:#00FFFF;height:25px;width:55px;">
+	<button onclick="colorselect('#000000')" style="background-color:#000000;height:25px;width:55px;"></button></td>
+</tr>
+<tr>
+	<td ><button onclick="colorselect('#666699')" style="background-color:#666699;height:25px;width:55px;">
+	<button onclick="colorselect('#CC0099')" style="background-color:#CC0099;height:25px;width:55px;"></button></td>
+</tr>
+</div>
+<div id="draw" style="position:absolute;left:122px;width:700px;height:500px;background-color:white;">
+<canvas id="canvas1" width="700px" height="500px" style="position:absolute;"></canvas>
+<canvas id="canvas" width="700px" height="500px" style="position:absolute;"><canvas>
+</div>
+</html>
+<script>
+var canvas=document.getElementById('canvas');
+var context=canvas.getContext('2d');
+
+var canvas1=document.getElementById('canvas1');
+var context1=canvas1.getContext('2d');
+
+var begin_X;
+var begin_Y;
+var end_X;
+var end_Y;
+var radius;
+var currentTool=0;
+var currentColor;
+var count=0;
+var d_type='stroke';
+
+canvas.addEventListener('mousedown',function(evt){
+
+		var mousePos = getMousePos(evt);
+		begin_X=mousePos.x;
+		begin_Y=mousePos.y;
+		count=1;
+
+}, false);
+
+canvas.addEventListener('mousemove',function(evt){
+		var mousePos = getMousePos(evt);
+		end_X=mousePos.x;
+		end_Y=mousePos.y;
+		if (currentTool == "rectangle" && count == 1)
+		{
+			context.clearRect(0,0,canvas.width,canvas.height);
+			context.strokeRect(begin_X,begin_Y,end_X-begin_X,end_Y-begin_Y);			
+		}
+		else if (currentTool == "line" && count == 1)
+		{
+			context.beginPath();
+			context.moveTo(begin_X,begin_Y);
+			context.clearRect(0,0,canvas.width,canvas.height);
+			context.lineTo(end_X,end_Y);
+			context.closePath();
+			context.stroke();
+		}
+		else if (currentTool == "circle" && count == 1)
+		{
+			radi = end_X-begin_X;
+			context.beginPath();
+			context.clearRect(0,0,canvas.width,canvas.height);
+			context.arc(begin_X,begin_Y,radi,0,2*Math.PI,true);
+			context.closePath();
+			context.stroke();
+		}
+		else if (currentTool == "eraser" && count == 1)
+		{
+			context.clearRect(0,0,canvas.width,canvas.height);
+			context.strokeRect(end_X-5,end_Y-10,10,10);
+			context1.clearRect(end_X-5,end_Y-10,10,10);
+		}
+},false);
+
+canvas.addEventListener('mouseup',function(evt){
+		count=0;
+		if (currentTool == "rectangle")
+		{
+			context.clearRect(0,0,canvas.width,canvas.height);
+			drawRect(begin_X,begin_Y,end_X-begin_X,end_Y-begin_Y);
+		}
+		else if (currentTool == "line")
+		{
+			context.clearRect(0,0,canvas.width,canvas.height);
+			drawLine(begin_X,begin_Y,end_X,end_Y);
+		}
+		else if (currentTool == "circle")
+		{
+			context.clearRect(0,0,canvas.width,canvas.height);
+			drawCircle(begin_X,begin_Y,radi);
+		}
+		else if (currentTool == "eraser")
+		{
+			context.clearRect(0,0,canvas.width,canvas.height);
+		}
+		},false);
+
+function getMousePos(evt)
+{
+		var x = new Number();
+        var y = new Number();
+
+        if (evt.x != undefined && evt.y != undefined)
+        {
+          x = evt.x - 402;
+          y = evt.y - 101;
+        }
+        else
+        {
+          x = evt.clientX - 402;
+          y = evt.clientY - 101;
+        }
+
+		return{
+			x: x,
+			y: y};
+}
+
+function drawLine(begin_X,begin_Y,end_X,end_Y)
+{
+		context1.beginPath();
+		context1.moveTo(begin_X,begin_Y);
+		context1.lineTo(end_X,end_Y);
+		context1.closePath();
+		context1.stroke();
+}
+
+function drawRect(begin_X,begin_Y,end_X,end_Y)
+{
+	if (d_type == 'stroke')
+		context1.strokeRect(begin_X,begin_Y,end_X,end_Y);
+	else if (d_type == 'fill')
+		context1.fillRect(begin_X,begin_Y,end_X,end_Y);
+}
+
+function drawCircle(begin_X,begin_Y,radi)
+{
+	context1.beginPath();
+	context1.arc(begin_X,begin_Y,radi,0,2*Math.PI,true);
+	context1.closePath();
+	if (d_type == 'stroke')
+		context1.stroke();
+	else if (d_type == 'fill')	
+	context1.fill();
+}
+function clearAll()
+{
+	context.clearRect(0,0,canvas.width,canvas.height);
+	context1.clearRect(0,0,canvas.width,canvas.height);
+}
+
+function colorselect(color)
+{
+	context.fillStyle = color;
+	context.strokeStyle = color;
+	context1.fillStyle = color;
+	context1.strokeStyle = color;
+}
+
+function drawshape(shape)
+{
+	currentTool=shape;
+}
+
+function filltype(value)
+{
+	d_type=value;
+}
+</script>
